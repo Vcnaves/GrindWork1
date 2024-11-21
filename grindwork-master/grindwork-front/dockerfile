@@ -1,0 +1,12 @@
+FROM lkazumii/node-java-mysql:latest
+
+WORKDIR /grindwork-front
+COPY . .
+
+RUN npm install && npm run build
+
+RUN npm install -g serve
+
+EXPOSE 5173
+
+CMD ["serve", "-s", "dist", "-l", "5173"]

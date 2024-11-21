@@ -1,0 +1,21 @@
+FROM timbru31/java-node:17-jdk-iron AS build
+
+RUN apt-get update && apt-get install -y maven && apt-get clean
+
+WORKDIR /grindwork-back
+
+COPY . .
+
+RUN mvn clean install -DskipTests
+
+FROM timbru31/java-node:17-jdk-iron
+
+WORKDIR /app
+
+COPY --from=build /grindwork-back/target/grindwork.jar /grindwork-back/grindwork.jar
+
+VOLUME /app/uploads
+
+EXPOSE 8085
+
+ENTRYPOINT ["java", "-jar", "/grindwork-back/grindwork.jar"]

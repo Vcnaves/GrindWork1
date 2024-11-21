@@ -1,0 +1,26 @@
+FROM timbru31/java-node:17-jdk-iron AS build
+
+RUN apt-get update && apt-get install -y maven && apt-get clean
+
+WORKDIR /grindwork-back
+COPY ./grindwork/ ./
+RUN mvn clean install -DskipTests
+
+WORKDIR /grindwork-front
+COPY ./grindwork-front/ ./
+RUN npm install && npm run build
+
+FROM timbru31/java-node:17-jdk-iron
+
+WORKDIR /app
+COPY --from=build /grindwork-back/target/grindwork.jar /app/grindwork.jar
+
+WORKDIR /app/front
+COPY --from=build /grindwork-front/dist /app/front/dist
+
+RUN npm install -g serve
+
+EXPOSE 8085
+EXPOSE 5173
+
+CMD java -jar /app/grindwork.jar & serve -s /app/front/dist -l 5173
